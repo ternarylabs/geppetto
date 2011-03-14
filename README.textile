@@ -1,0 +1,18 @@
+Geppetto is a simple command line tool to help managing Facebook test users and the generation of controlled content.
+
+h2. Installation
+
+@$ bundle@
+
+h2. Usage
+
+@$ geppetto help@
+
+h2. Dependencies
+
+See Gemfile for gem dependencies.
+
+A working version of ImageMagick is required.
+
+
+sudo port install tiff -macosx imagemagick +q8 +gs +wmf
