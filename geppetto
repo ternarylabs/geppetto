@@ -10,6 +10,11 @@ require 'tempfile'
 
 include Koala
 
+trap("INT") {
+  puts "\nExiting"
+  exit
+}
+
 if File.exist?("settings.yaml")
   ::Settings = YAML.load_file("settings.yaml")
 else
@@ -18,7 +23,7 @@ else
 end
 
 class Geppetto < Thor 
-  include Thor::Actions
+#  include Thor::Actions
 
   method_option :env, :type => :string, :default => 'dev', :desc => "App environment"  
   def initialize(*args)
@@ -173,9 +178,10 @@ class Geppetto < Thor
     }
     progress.finish
   end
-  
+
   desc "build", "Built test user network and generate posts, likes, images"
   def build
+    say "Build test setup", :white
     delete_all
     create_users(10, true, true, Settings[options.env]['default_permissions'])
     generate_status
@@ -183,6 +189,15 @@ class Geppetto < Thor
     generate_images
     generate_comments
     generate_likes
+  end
+
+  desc "frenzy", "Genera posts, likes, images, etc. for all users in a random fashion. CTRL-C to cancel."
+  def frenzy
+    say "Frenzy! (CTRL-C to stop)", :white
+    actions = %w(generate_status generate_posts generate_images generate_comments generate_likes)
+    while (true) 
+      send actions[rand(actions.size)]
+    end
   end
   
   private
