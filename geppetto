@@ -23,7 +23,7 @@ else
 end
 
 class Geppetto < Thor 
-#  include Thor::Actions
+ # include Thor::Actions
 
   method_option :env, :type => :string, :default => 'dev', :desc => "App environment"  
   def initialize(*args)
@@ -62,10 +62,10 @@ class Geppetto < Thor
   desc "delete_all", "Delete all test users"
   def delete_all
     if yes? "Are you sure you want to delete ALL existing test users?", :red
-      size = @test_users.list.size
+      size = get_test_users.size
       say "Deleting #{size} users", :white
       progress = ProgressBar.new("Deleting", size)
-      @test_users.list.each{|user_hash|
+      get_test_users.each{|user_hash|
         @test_users.delete(user_hash)
         progress.inc
       }
@@ -93,7 +93,7 @@ class Geppetto < Thor
 
   desc "generate_status", "Every user will post a new status update"
   def generate_status
-    users_hash = @test_users.list
+    users_hash = get_test_users
     say "Posting status for #{users_hash.size} users", :white
     progress = ProgressBar.new("Posting", users_hash.size)
     users_hash.each{|user_hash|
@@ -107,7 +107,7 @@ class Geppetto < Thor
 
   desc "generate_posts", "Every user will post on their friend's wall"
   def generate_posts
-    users_hash = @test_users.list
+    users_hash = get_test_users
     say "Posting for #{users_hash.size} users", :white
     users_hash.each{|user_hash|
       @graph = Facebook::GraphAPI.new(get_token_for_user_id(user_hash['id']))
@@ -125,7 +125,7 @@ class Geppetto < Thor
 
   desc "generate_likes", "Every user will like all their friend's posts"
   def generate_likes
-    users_hash = @test_users.list
+    users_hash = get_test_users
     say "Posting likes for #{users_hash.size} users", :white
     users_hash.each{|user_hash|
       # Get this user's feed
@@ -143,12 +143,12 @@ class Geppetto < Thor
 
   desc "generate_comments", "Every user will add a comment to each post in their feed"
   def generate_comments
-    users_hash = @test_users.list
+    users_hash = get_test_users
     say "Posting comments for #{users_hash.size} users", :white
     users_hash.each{|user_hash|
       # Get this user's feed
       @graph = Facebook::GraphAPI.new(get_token_for_user_id(user_hash['id']))
-      feed = @graph.get_connections(user_hash['id'], 'home')
+      feed = @graph.get_connections('me', 'home')
       progress = ProgressBar.new("Comments", feed.size)
       feed.each {|item|
         @graph.put_comment(item['id'], "Comment created at #{Time.now}")
@@ -160,7 +160,7 @@ class Geppetto < Thor
 
   desc "generate_images", "Every user will post a picture to their feed"
   def generate_images
-    users_hash = @test_users.list
+    users_hash = get_test_users
     say "Posting images for #{users_hash.size} users", :white
     progress = ProgressBar.new("Images", users_hash.size)
     users_hash.each{|user_hash|
@@ -197,6 +197,8 @@ class Geppetto < Thor
     actions = %w(generate_status generate_posts generate_images generate_comments generate_likes)
     while (true) 
       send actions[rand(actions.size)]
+      say "Sleeping"
+      sleep 2.0
     end
   end
   
@@ -208,10 +210,16 @@ class Geppetto < Thor
     hash.each{|key,value| say format(format_string, key, value)}
     say "-" * 80
   end
+
+  # Returned a sanitized version of the test users list. For some reason, some test users
+  # are now returned without oauth access token.
+  def get_test_users
+    @test_users.list.delete_if {|user_hash| !user_hash.include?('access_token') }
+  end
   
   def get_user_hash(user_id)
     if user_id
-      @test_users.list.each {|user_hash| return user_hash if user_hash['id'] == user_id}
+      get_test_users.each {|user_hash| return user_hash if user_hash['id'] == user_id}
     end
     raise Facebook::APIError.new({"type" => 'Error', 'message' => "This user id is unknown"})
   end
@@ -230,7 +238,7 @@ class Geppetto < Thor
   def create_users(nb, connected, networked, permissions)
     if networked
       say "Creating #{nb} networked test users", :white
-      users_hash = @test_users.create_network(nb.to_i, connected, permissions.join(","))
+      users_hash = create_network(nb.to_i, connected, permissions.join(","))
       users_hash.each{|user_hash|
         dump(user_hash)
       }      
@@ -243,10 +251,36 @@ class Geppetto < Thor
       end
     end    
   end  
+  
+  def create_network(network_size, installed = true, permissions = '')
+    network_size = 100 if network_size > 100
+    progress = ProgressBar.new("Creating", network_size)
+    users = (0...network_size).collect { 
+      progress.inc
+      @test_users.create(installed, permissions) 
+    }
+    progress.finish
+
+    friends = users.clone
+    users.each do |user|
+      # Remove this user from list of friends
+      friends.delete_at(0)
+      # befriend all the others
+      friends.each do |friend|
+        say "Befriending #{user['id']} #{friend['id']}"
+        begin
+          @test_users.befriend(user, friend)
+        rescue Facebook::APIError => e
+          say "Problem befriending: #{e}", :red
+        end
+      end
+    end
+    return users
+  end  
 end
 
 begin
   Geppetto.start
 rescue Facebook::APIError => e
-  say e
+  puts e
 end
