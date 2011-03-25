@@ -15,10 +15,27 @@ trap("INT") {
   exit
 }
 
-if File.exist?("settings.yaml")
-  ::Settings = YAML.load_file("settings.yaml")
+name = File.basename(__FILE__)
+settings_path = ".#{name}/settings.yaml"
+
+if File.exist?(settings_path)
+  ::Settings = YAML.load_file(settings_path)
+elsif File.exists?(File.expand_path("~/#{settings_path}"))
+  ::Settings = YAML.load_file(File.expand_path("~/#{settings_path}"))
 else
-  say "You need to create a settings.yaml file"
+  puts "You need to create a settings file in ~/#{settings_path}. Sample content:"
+  sample = <<HERE
+dev:  &defaults
+  app_id: <-- YOUR APP ID -->
+  secret: <-- YOUR APP SECRET -->
+  # http://developers.facebook.com/docs/authentication/permissions/
+  default_permissions: [read_stream, offline_access, publish_stream, friends_hometown, friends_location]
+qa:
+    app_id: <-- YOUR APP ID -->
+    secret: <-- YOUR APP SECRET -->
+    <<: *defaults
+HERE
+  puts sample
   exit
 end
 
