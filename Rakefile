@@ -1,7 +1,12 @@
+$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
+require 'geppetto/version'
+
+task :default => [:build]
+
 task :build do
-  system "gem build bundler.gemspec"
+  system "gem build geppetto.gemspec"
 end
  
 task :release => :build do
-  system "gem push bundler-#{Bunder::VERSION}"
+  system "gem push geppetto-#{Geppetto::VERSION}.gem"
 end

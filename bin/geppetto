@@ -29,7 +29,7 @@ end
 
 begin
   Geppetto::CLI.start
-rescue Facebook::APIError => e
+rescue Koala::Facebook::APIError => e
   puts e
 rescue Interrupt => e
   puts "\nQuitting..."
