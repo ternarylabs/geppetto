@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'rubygems'
 require 'geppetto'
 require 'geppetto/cli'
 
@@ -18,6 +21,7 @@ dev:  &defaults
   secret: <-- YOUR APP SECRET -->
   # http://developers.facebook.com/docs/authentication/permissions/
   default_permissions: [read_stream, offline_access, publish_stream, friends_hometown, friends_location]
+  app_url: <-- YOUR APP URL LOCATION FOR OAUTH -->
 qa:
     app_id: <-- YOUR APP ID -->
     secret: <-- YOUR APP SECRET -->

@@ -198,6 +198,9 @@ module Geppetto
       max_key_width = hash.keys.collect{|key| key.size}.max
       format_string = "%#{max_key_width}s: %s"
       hash.each{|key,value| say format(format_string, key, value)}
+      if hash.has_key?('access_token') 
+        say format(format_string, 'app_login',  "#{Settings[options.env]['app_url']}?access_token=#{hash['access_token']}&expires_in=0")
+      end
       say "-" * 80
     end
 
