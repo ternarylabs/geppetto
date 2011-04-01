@@ -23,5 +23,4 @@ Gem::Specification.new do |s|
   s.add_dependency('koala', '~>1.0.0.beta2')
   s.add_dependency('thor')
   s.add_dependency('progressbar')
-  s.add_dependency('rmagick')  
 end

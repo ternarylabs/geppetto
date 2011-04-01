@@ -3,7 +3,6 @@ require 'koala'
 require 'ostruct'
 require 'yaml'
 require 'progressbar'
-require 'rmagick'
 require 'tempfile'
 
 module Geppetto
@@ -156,14 +155,8 @@ module Geppetto
       users_hash.each{|user_hash|
         # Get this user's feed
         @graph = Facebook::GraphAPI.new(get_token_for_user_id(user_hash['id']))
-        file = Tempfile.new('geppetto')
-        begin
-          create_image(file.path)
-          @graph.put_picture(file.path, 'image/jpeg', {:message => "Image created at #{Time.now}"})
-        ensure
-          file.close
-          file.unlink
-        end
+        file_path = File.join(File.dirname(__FILE__), '320_240.png')
+        @graph.put_picture(file_path, 'image/png', {:message => "Image created at #{Time.now}"})
         progress.inc
       }
       progress.finish
@@ -219,13 +212,6 @@ module Geppetto
   
     def get_token_for_user_id(user_id)
       return get_user_hash(user_id)['access_token']
-    end
-
-    # Crate an image containing text
-    def create_image(file)
-      image = Magick::Image.new(320, 240, Magick::HatchFill.new("##{'%02X' % rand(255)}#{'%02X' % rand(255)}#{'%02X' % rand(255)}"))
-      image.format = "jpg"
-      image.write(file)
     end
   
     def create_users(nb, connected, networked, permissions)
