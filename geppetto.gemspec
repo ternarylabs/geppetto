@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.has_rdoc   = false
   s.requirements << 'ImageMagick'
 
-  s.files      = Dir.glob("{bin,lib}/**/*") + %w(LICENSE README.textile)
+  s.files      = Dir.glob("{bin,lib}/**/*") + %w(LICENSE README.md)
   s.executables = %w(geppetto)
   s.default_executable  = 'geppetto'
   s.bindir        = 'bin'
