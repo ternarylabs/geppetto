@@ -147,7 +147,7 @@ module Geppetto
       }
     end
 
-    desc "generate_images", "Every user will post a picture to their feed"
+    desc "generate_images", "Every user will post two pictures (landscape and portrait) to their feed"
     def generate_images
       users_hash = get_test_users
       say "Posting images for #{users_hash.size} users", :white
@@ -155,9 +155,11 @@ module Geppetto
       users_hash.each{|user_hash|
         # Get this user's feed
         @graph = Facebook::GraphAPI.new(get_token_for_user_id(user_hash['id']))
-        file_path = File.join(File.dirname(__FILE__), '320_240.png')
-        @graph.put_picture(file_path, 'image/png', {:message => "Image created at #{Time.now}"})
-        progress.inc
+        %w(640_480.png 480_640.png).each {|file_name|
+          file_path = File.join(File.dirname(__FILE__), file_name)
+          @graph.put_picture(file_path, 'image/png', {:message => "Image created at #{Time.now}"})
+          progress.inc
+        }
       }
       progress.finish
     end
@@ -192,7 +194,7 @@ module Geppetto
       format_string = "%#{max_key_width}s: %s"
       hash.each{|key,value| say format(format_string, key, value)}
       if hash.has_key?('access_token') 
-        say format(format_string, 'app_login',  "#{Settings[options.env]['app_url']}?access_token=#{hash['access_token']}&expires_in=0")
+        say format(format_string, 'app_login',  "#{Settings[options.env]['app_url']}#access_token=#{hash['access_token']}&expires_in=0")
       end
       say "-" * 80
     end
@@ -232,7 +234,7 @@ module Geppetto
     end  
   
     def create_network(network_size, installed = true, permissions = '')
-      network_size = 100 if network_size > 100
+      network_size = 1000 if network_size > 1000
       progress = ProgressBar.new("Creating", network_size)
       users = (0...network_size).collect { 
         progress.inc

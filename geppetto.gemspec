@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.default_executable  = 'geppetto'
   s.bindir        = 'bin'
   s.require_paths = ["lib"]
-  s.add_dependency('koala', '~>1.0.0.beta2')
+  s.add_dependency('koala', '~>1.0.0')
   s.add_dependency('thor')
   s.add_dependency('progressbar')
 end
