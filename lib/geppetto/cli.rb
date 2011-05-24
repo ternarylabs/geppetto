@@ -151,7 +151,7 @@ module Geppetto
     def generate_images
       users_hash = get_test_users
       say "Posting images for #{users_hash.size} users", :white
-      progress = ProgressBar.new("Images", users_hash.size)
+      progress = ProgressBar.new("Images", users_hash.size*2)
       users_hash.each{|user_hash|
         # Get this user's feed
         @graph = Facebook::GraphAPI.new(get_token_for_user_id(user_hash['id']))

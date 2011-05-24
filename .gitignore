@@ -1,3 +1,5 @@
 .DS_Store
 settings.yaml
 *.gem
+*.log
+*.log.zip
