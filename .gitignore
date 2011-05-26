@@ -2,4 +2,4 @@
 settings.yaml
 *.gem
 *.log
-*.log.zip
+*.log.*

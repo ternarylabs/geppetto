@@ -1,5 +1,4 @@
 require 'geppetto/version'
-require 'geppetto/logging'
 require 'net/http'
 require 'koala'
 require 'logger'
