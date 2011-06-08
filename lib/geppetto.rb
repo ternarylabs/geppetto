@@ -49,17 +49,20 @@ module Geppetto
             http.use_ssl = true if private_request
 
             result = http.start do |http|
-              Geppetto.log("#{verb.upcase} #{path} #{encode_params(args)}")
               response, body = if verb == "post"
                 if params_require_multipart? args
+                  Geppetto.log("curl -i -X #{verb.upcase} (multi-part-params) 'http#{http.use_ssl? ? 's':''}://#{http.address}:#{http.port}#{path}'")
                   http.request Net::HTTP::Post::Multipart.new path, encode_multipart_params(args)
                 else
+                  params = encode_params(args).split('&').collect {|param| "-d #{param} " }
+                  Geppetto.log("curl -i -X #{verb.upcase} #{params.to_s} 'http#{http.use_ssl? ? 's':''}://#{http.address}:#{http.port}#{path}'")
                   http.post(path, encode_params(args))
                 end
               else
+                Geppetto.log("curl -i -X #{verb.upcase} 'http#{http.use_ssl? ? 's':''}://#{http.address}:#{http.port}#{path}?#{encode_params(args)}'")
                 http.get("#{path}?#{encode_params(args)}")
               end
-              Geppetto.log("#{response.code.to_i} #{body}")
+              Geppetto.log("#{response.code} #{body}") if response.code.to_i != 200
               Koala::Response.new(response.code.to_i, body, response)
             end
           end

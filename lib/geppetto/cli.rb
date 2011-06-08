@@ -73,6 +73,27 @@ module Geppetto
     def befriend(id1, id2)
       @test_users.befriend(get_user_hash(id1), get_user_hash(id2))
     end
+
+    desc "befriend_all", "Friend all users with each other"
+    def befriend_all
+      if yes? "Are you sure you want to befriend ALL existing test users (this could take a while)?", :red
+        users = get_test_users
+        friends = users.clone
+        users.each do |user|
+          # Remove this user from list of friends
+          friends.delete_at(0)
+          # befriend all the others
+          friends.each do |friend|
+            say "Befriending #{user['id']} #{friend['id']}"
+            begin
+              @test_users.befriend(user, friend)
+            rescue Facebook::APIError => e
+              say "Problem befriending: #{e}", :red
+            end
+          end
+        end
+      end
+    end
   
     desc "wall_post ID TEXT", "Post to the user's wall"
     def wall_post(id, text)
